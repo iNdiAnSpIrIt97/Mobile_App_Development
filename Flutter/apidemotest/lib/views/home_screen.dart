@@ -1,8 +1,7 @@
 // ignore_for_file: avoid_print
-
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:apidemotest/services/user_api.dart';
 import 'package:flutter/material.dart';
+import 'package:apidemotest/models/user.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +11,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> users = [];
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,28 +29,26 @@ class _HomeScreenState extends State<HomeScreen> {
           itemCount: users.length,
           itemBuilder: (context, index) {
             final user = users[index];
-            final email = user['email'];
             return ListTile(
-              leading: CircleAvatar(
-                child: Text('${index + 1}'),
+              title: Text(user.fullName),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.location.city),
+                  Text(user.phone),
+                  Text(user.location.state),
+                  Text(user.location.postcode),
+                ],
               ),
-              title: Text(email),
             );
           }),
-      floatingActionButton: FloatingActionButton(onPressed: fetchUsers),
     );
   }
 
-  void fetchUsers() async {
-    print('Fetching users..........');
-    const url = 'https://randomuser.me/api/?results=50';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
+  Future<void> fetchUsers() async {
+    final response = await UserApi.fetchUsers();
     setState(() {
-      users = json['results'];
+      users = response;
     });
-    print("fetch users completed");
   }
 }
